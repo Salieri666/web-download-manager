@@ -1,0 +1,121 @@
+server:
+  port: ${GATEWAY_API_PORT:8081}
+  servlet:
+    session:
+      cookie:
+        name: OAUTH2SESSION
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+  application:
+    name: api-gateway
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        default_schema: ${spring.flyway.schemas}
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials Vary, RETAIN_UNIQUE
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        corsConfigurations:
+          "[/**]":
+            allowedOrigins: ${ALLOWED_ORIGINS}
+            allowedHeaders: "*"
+            allowedMethods: "*"
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: openapi
+          uri: http://${spring.application.name}:${server.port}
+          predicates:
+            - Path=/v3/api-docs/**
+          filters:
+            - RewritePath=/v3/api-docs/(?<path>.*), /${path}/v3/api-docs
+
+springdoc:
+  enable-native-support: true
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    urls:
+      - name: downloader-service
+        url: /downloader-service/v3/api-docs
+        primaryName: API Downloader Service
+
+---
+server:
+  port: ${GATEWAY_API_PORT:8081}
+  servlet:
+    session:
+      cookie:
+        name: OAUTH2SESSION
+
+spring:
+  config:
+    activate:
+      on-profile: sit
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+  application:
+    name: api-gateway
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        default_schema: ${spring.flyway.schemas}
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials Vary, RETAIN_UNIQUE
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        corsConfigurations:
+          "[/**]":
+            allowedOrigins: ${ALLOWED_ORIGINS}
+            allowedHeaders: "*"
+            allowedMethods: "*"
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: openapi
+          uri: http://${spring.application.name}:${server.port}
+          predicates:
+            - Path=/v3/api-docs/**
+          filters:
+            - RewritePath=/v3/api-docs/(?<path>.*), /${path}/v3/api-docs
+
+    kubernetes:
+      discovery:
+        catalog-services-watch:
+          enabled: true
+          delay: 5000
+      loadbalancer:
+        mode: SERVICE
+
+springdoc:
+  enable-native-support: true
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    config-url: /service/api-gateway/v3/api-docs/swagger-config
+    urls:
+      - name: downloader-service
+        url: /service/api-gateway/downloader-service/v3/api-docs
+        primaryName: API Downloader Service

@@ -1,0 +1,14 @@
+spring:
+  config:
+    activate:
+      on-profile: dev, sit
+
+server:
+  port: ${DISCOVERY_SERVICE_PORT:8761}
+
+eureka:
+  instance:
+    statusPageUrlPath: /actuator/info
+    healthCheckUrlPath: /actuator/health
+  server:
+    enableSelfPreservation: false
