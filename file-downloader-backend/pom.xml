@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.filedownloader</groupId>
-    <artifactId>filedownloader-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <artifactId>filedownloader</artifactId>
+    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <name>FileDownloader Parent</name>
@@ -20,13 +20,16 @@
     </parent>
 
     <properties>
+        <revision>0.0.1-SNAPSHOT</revision>
         <java.version>21</java.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring-cloud.version>2024.0.0</spring-cloud.version>
+        <spring-cloud.version>2025.1.0</spring-cloud.version>
+        <spring-boot.version>4.0.0</spring-boot.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+        <swagger-core-version>2.2.20</swagger-core-version>
     </properties>
 
     <modules>
@@ -50,24 +53,28 @@
                 <artifactId>mapstruct</artifactId>
                 <version>${mapstruct.version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.swagger.core.v3</groupId>
+                <artifactId>swagger-annotations</artifactId>
+                <version>${swagger-core-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.swagger.core.v3</groupId>
+                <artifactId>swagger-models</artifactId>
+                <version>${swagger-core-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jsr310</artifactId>
+                <version>2.17.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>2.6.0</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-registry-prometheus</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
-    </dependencies>
 
     <build>
         <pluginManagement>
@@ -75,7 +82,16 @@
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>repackage</goal>
+                                <goal>build-info</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                     <configuration>
+                        <classifier>filedownloader</classifier>
                         <excludes>
                             <exclude>
                                 <groupId>org.projectlombok</groupId>
@@ -113,35 +129,4 @@
             </plugins>
         </pluginManagement>
     </build>
-
-    <profiles>
-        <profile>
-            <id>eureka</id>
-            <properties>
-                <deployment.profile>eureka</deployment.profile>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>org.springframework.cloud</groupId>
-                    <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>kubernetes</id>
-            <properties>
-                <deployment.profile>kubernetes</deployment.profile>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>org.springframework.cloud</groupId>
-                    <artifactId>spring-cloud-starter-kubernetes-client-loadbalancer</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.springframework.cloud</groupId>
-                    <artifactId>spring-cloud-starter-kubernetes-client</artifactId>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
 </project>

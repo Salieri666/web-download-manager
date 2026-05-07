@@ -11,4 +11,8 @@ eureka:
     statusPageUrlPath: /actuator/info
     healthCheckUrlPath: /actuator/health
   server:
-    enableSelfPreservation: false
+    enableSelfPreservation: false #for local
+
+  client:
+    register-with-eureka: false
+    fetch-registry: false

@@ -1,0 +1,52 @@
+#!/bin/sh
+
+if [ -z "$JAVA_HOME" ]; then
+  echo "Error: JAVA_HOME is not set." >&2
+  exit 1
+fi
+
+find_maven_basedir() {
+  basedir="$1"
+  wdir="$1"
+  while [ "$wdir" != '/' ]; do
+    if [ -d "$wdir/.mvn" ]; then
+      basedir=$wdir
+      break
+    fi
+    wdir=$(cd "$wdir/.."; pwd)
+  done
+  echo "$basedir"
+}
+
+BASE_DIR=$(find_maven_basedir "$(pwd)")
+if [ -z "$BASE_DIR" ]; then
+  echo "Error: cannot find .mvn directory." >&2
+  exit 1
+fi
+
+WRAPPER_JAR="$BASE_DIR/.mvn/wrapper/maven-wrapper.jar"
+PROPS_FILE="$BASE_DIR/.mvn/wrapper/maven-wrapper.properties"
+WRAPPER_URL="https://repo.maven.apache.org/maven2/io/takari/maven-wrapper/0.5.6/maven-wrapper-0.5.6.jar"
+
+if [ -f "$PROPS_FILE" ]; then
+  URL_FROM_PROPS=$(sed -n 's/^wrapperUrl=//p' "$PROPS_FILE")
+  if [ -n "$URL_FROM_PROPS" ]; then
+    WRAPPER_URL="$URL_FROM_PROPS"
+  fi
+fi
+
+if [ ! -f "$WRAPPER_JAR" ]; then
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL -o "$WRAPPER_JAR" "$WRAPPER_URL"
+  elif command -v wget >/dev/null 2>&1; then
+    wget -O "$WRAPPER_JAR" "$WRAPPER_URL"
+  else
+    echo "Error: curl or wget is required to download maven-wrapper.jar" >&2
+    exit 1
+  fi
+fi
+
+exec "$JAVA_HOME/bin/java" \
+  -classpath "$WRAPPER_JAR" \
+  "-Dmaven.multiModuleProjectDirectory=$BASE_DIR" \
+  org.apache.maven.wrapper.MavenWrapperMain "$@"
