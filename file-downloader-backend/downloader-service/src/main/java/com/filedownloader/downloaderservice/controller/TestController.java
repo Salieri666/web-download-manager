@@ -1,5 +1,6 @@
 package com.filedownloader.downloaderservice.controller;
 
+import com.filedownloader.exceptionlib.exception.BusinessException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

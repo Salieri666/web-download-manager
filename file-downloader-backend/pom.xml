@@ -37,6 +37,7 @@
         <module>config-service</module>
         <module>discovery-service</module>
         <module>api-gateway</module>
+        <module>exception-lib</module>
         <module>downloader-service</module>
     </modules>
 
