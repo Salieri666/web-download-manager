@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: downloader-service
   config:
     activate:
       on-profile: dev
@@ -44,6 +46,9 @@ logging:
     org.springframework.web.client: trace
     com.filedownloader: INFO
 
+security:
+  cors:
+    allowed-origins: ${ALLOWED_ORIGINS}
 ---
 
 spring:
@@ -81,3 +86,7 @@ spring:
 
 server:
   port: ${DOWNLOADER_SERVICE_PORT:8085}
+
+security:
+  cors:
+    allowed-origins: ${ALLOWED_ORIGINS}

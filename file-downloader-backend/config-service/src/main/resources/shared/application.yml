@@ -1,3 +1,9 @@
+server:
+  max-http-request-header-size: 64KB
+  error:
+    include-message: always
+
+
 management:
   endpoints:
     web:
@@ -10,3 +16,13 @@ management:
     metrics:
       export:
         enabled: true
+
+#----
+spring:
+  config:
+    activate:
+      on-profile: sit
+  cloud:
+    kubernetes:
+      loadbalancer:
+        mode: SERVICE

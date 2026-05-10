@@ -15,11 +15,6 @@ spring:
       max-request-size: 10MB
   application:
     name: api-gateway
-  jpa:
-    show-sql: true
-    properties:
-      hibernate:
-        default_schema: ${spring.flyway.schemas}
   cloud:
     gateway:
       default-filters:
@@ -31,10 +26,13 @@ spring:
             allowedOrigins: ${ALLOWED_ORIGINS}
             allowedHeaders: "*"
             allowedMethods: "*"
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
+      server:
+        #webflux version
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
       routes:
         - id: openapi
           uri: http://${spring.application.name}:${server.port}
@@ -54,6 +52,12 @@ springdoc:
         url: /downloader-service/v3/api-docs
         primaryName: API Downloader Service
 
+
+logging:
+  level:
+    org.springframework.cloud.gateway.discovery: DEBUG
+    org.springframework.cloud.client.discovery: DEBUG
+
 ---
 server:
   port: ${GATEWAY_API_PORT:8081}
@@ -72,11 +76,6 @@ spring:
       max-request-size: 10MB
   application:
     name: api-gateway
-  jpa:
-    show-sql: true
-    properties:
-      hibernate:
-        default_schema: ${spring.flyway.schemas}
   cloud:
     gateway:
       default-filters:
@@ -88,10 +87,12 @@ spring:
             allowedOrigins: ${ALLOWED_ORIGINS}
             allowedHeaders: "*"
             allowedMethods: "*"
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
       routes:
         - id: openapi
           uri: http://${spring.application.name}:${server.port}
