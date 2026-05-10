@@ -21,6 +21,7 @@ spring:
     show-sql: false
     properties:
       hibernate:
+        default_schema: ${DOWNLOADER_SERVICE_SCHEMA:downloader_service}
         format_sql: true
         jdbc:
           batch_size: 20
@@ -28,11 +29,15 @@ spring:
         order_updates: true
   liquibase:
     enabled: true
-    change-log: classpath:db/changelog/db.changelog-master.xml
+    default-schema: ${spring.jpa.properties.hibernate.default_schema}
+    change-log: classpath:db/changelog/db.changelog-master.yaml
     drop-first: false
+    parameters:
+      schema: ${spring.jpa.properties.hibernate.default_schema}
+      extension-schema: pg_catalog
 
 server:
-  port: ${DOWNLOADER_SERVICE_PORT:8081}
+  port: ${DOWNLOADER_SERVICE_PORT:8085}
 
 logging:
   level:
@@ -71,8 +76,8 @@ spring:
         order_updates: true
   liquibase:
     enabled: true
-    change-log: classpath:db/changelog/db.changelog-master.xml
+    change-log: classpath:db/changelog/db.changelog-master.yaml
     drop-first: false
 
 server:
-  port: ${DOWNLOADER_SERVICE_PORT:8081}
+  port: ${DOWNLOADER_SERVICE_PORT:8085}
