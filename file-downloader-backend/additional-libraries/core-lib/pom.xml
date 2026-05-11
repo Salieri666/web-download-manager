@@ -6,16 +6,16 @@
 
     <parent>
         <groupId>com.filedownloader</groupId>
-        <artifactId>filedownloader</artifactId>
+        <artifactId>additional-libraries</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>exception-lib</artifactId>
+    <artifactId>core-lib</artifactId>
     <packaging>jar</packaging>
 
-    <name>Exception Library</name>
-    <description>Shared exception handling library for microservices</description>
+    <name>Core Library</name>
+    <description>Shared core library for microservices</description>
 
     <dependencies>
         <dependency>
@@ -37,6 +37,18 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
         </dependency>
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
