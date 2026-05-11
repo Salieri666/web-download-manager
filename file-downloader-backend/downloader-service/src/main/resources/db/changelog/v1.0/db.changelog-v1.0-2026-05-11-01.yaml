@@ -1,0 +1,145 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-05-11-01
+      author: ilya
+      changes:
+        #=============================#
+        #    File descriptions table  #
+        #=============================#
+        - createTable:
+            tableName: file_descriptions
+            remarks: "Main file description"
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: file_name
+                  type: varchar(512)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: storage_path
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: source_url
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(32)
+                  defaultValue: PENDING
+                  constraints:
+                    nullable: false
+              - column:
+                  name: total_size
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: mime_type
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: checksum
+                  type: varchar(128)
+              - column:
+                  name: metadata
+                  type: jsonb
+              - column:
+                  name: created_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+
+        #=====================#
+        #    File chunks      #
+        #=====================#
+        - createTable:
+            tableName: file_chunks
+            remarks: "File chunks"
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: file_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: chunk_index
+                  type: integer
+                  constraints:
+                    nullable: false
+              - column:
+                  name: start_byte
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: end_byte
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: current_size
+                  type: bigint
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(32)
+                  defaultValue: PENDING
+                  constraints:
+                    nullable: false
+              - column:
+                  name: worker_id
+                  type: varchar(100)
+              - column:
+                  name: retry_count
+                  type: integer
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_heartbeat
+                  type: timestamp with time zone
+              - column:
+                  name: completed_at
+                  type: timestamp with time zone
+
+        - addForeignKeyConstraint:
+            baseTableName: file_chunks
+            baseColumnNames: file_id
+            constraintName: fk_file_chunks_file_description
+            referencedTableName: file_descriptions
+            referencedColumnNames: id
+
+        - addUniqueConstraint:
+            tableName: file_chunks
+            columnNames: file_id, chunk_index
+            constraintName: uk_file_chunks_file_id_chunk_index
+
+        - createIndex:
+            tableName: file_chunks
+            indexName: idx_file_chunks_file_id
+            columns:
+              - column:
+                  name: file_id
