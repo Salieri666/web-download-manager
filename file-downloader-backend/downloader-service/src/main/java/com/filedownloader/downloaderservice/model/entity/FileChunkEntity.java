@@ -14,6 +14,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.*;
+import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 
 import java.time.Instant;
@@ -30,7 +31,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @SuperBuilder
-@lombok.experimental.FieldNameConstants(innerTypeName = "Fields")
+@FieldNameConstants
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FileChunkEntity {
 
@@ -56,11 +57,11 @@ public class FileChunkEntity {
     private Long currentSize = 0L;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 32)
+    @Column(name = "status", nullable = false)
     @Builder.Default
     private FileChunkStatus status = FileChunkStatus.PENDING;
 
-    @Column(name = "worker_id", length = 100)
+    @Column(name = "worker_id")
     private String workerId;
 
     @Column(name = "retry_count", nullable = false)
@@ -72,4 +73,7 @@ public class FileChunkEntity {
 
     @Column(name = "completed_at")
     private Instant completedAt;
+
+    @Column(name = "error_message", columnDefinition = "text")
+    private String errorMessage;
 }

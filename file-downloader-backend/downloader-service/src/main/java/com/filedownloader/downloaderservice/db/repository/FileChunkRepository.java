@@ -15,7 +15,7 @@ public interface FileChunkRepository extends JpaRepository<FileChunkEntity, UUID
 
     List<FileChunkEntity> findAllByFileDescription_Id(UUID fileId);
 
-    List<FileChunkEntity> findAllByFileDescription(FileDescriptionEntity fileDescription);
+    List<FileChunkEntity> findAllByFileDescription_IdOrderByChunkIndexAsc(UUID fileId);
 
     default FileChunkEntity getEntityById(UUID id) {
         return findById(id)

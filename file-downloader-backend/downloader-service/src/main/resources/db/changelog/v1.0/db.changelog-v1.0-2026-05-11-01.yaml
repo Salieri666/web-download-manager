@@ -13,9 +13,11 @@ databaseChangeLog:
               - column:
                   name: id
                   type: uuid
+                  defaultValueComputed: "gen_random_uuid()"
                   constraints:
                     nullable: false
                     primaryKey: true
+                    primaryKeyName: pk_file_descriptions
               - column:
                   name: file_name
                   type: varchar(512)
@@ -49,18 +51,18 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: checksum
-                  type: varchar(128)
+                  type: varchar(256)
               - column:
                   name: metadata
                   type: jsonb
               - column:
                   name: created_at
-                  type: timestamp with time zone
+                  type: timestamp
                   constraints:
                     nullable: false
               - column:
                   name: updated_at
-                  type: timestamp with time zone
+                  type: timestamp
                   constraints:
                     nullable: false
 
@@ -74,9 +76,11 @@ databaseChangeLog:
               - column:
                   name: id
                   type: uuid
+                  defaultValueComputed: "gen_random_uuid()"
                   constraints:
                     nullable: false
                     primaryKey: true
+                    primaryKeyName: pk_file_descriptions
               - column:
                   name: file_id
                   type: uuid
@@ -120,10 +124,10 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: last_heartbeat
-                  type: timestamp with time zone
+                  type: timestamp
               - column:
                   name: completed_at
-                  type: timestamp with time zone
+                  type: timestamp
 
         - addForeignKeyConstraint:
             baseTableName: file_chunks

@@ -2,20 +2,16 @@ package com.filedownloader.downloaderservice.model.entity;
 
 import com.filedownloader.corelib.entity.Auditable;
 import com.filedownloader.downloaderservice.model.enums.FileDescriptionStatus;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -23,7 +19,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @SuperBuilder
-@lombok.experimental.FieldNameConstants(innerTypeName = "Fields")
+@FieldNameConstants
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FileDescriptionEntity extends Auditable {
 
@@ -34,27 +30,36 @@ public class FileDescriptionEntity extends Auditable {
     @Column(name = "filename", nullable = false, length = 512)
     private String filename;
 
-    @Column(name = "storage_path", nullable = false, columnDefinition = "text")
+    @Column(name = "storage_path", nullable = false)
     private String storagePath;
 
-    @Column(name = "source_url", nullable = false, columnDefinition = "text")
+    @Column(name = "source_url", nullable = false)
     private String sourceUrl;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 32)
+    @Column(name = "status", nullable = false)
     @Builder.Default
     private FileDescriptionStatus status = FileDescriptionStatus.PENDING;
 
     @Column(name = "total_size", nullable = false)
     private Long totalSize;
 
-    @Column(name = "mime_type", nullable = false, length = 255)
+    @Column(name = "mime_type", nullable = false)
     private String mimeType;
 
-    @Column(name = "checksum", length = 128)
+    @Column(name = "checksum")
     private String checksum;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "metadata", columnDefinition = "jsonb")
     private Map<String, Object> metadata;
+
+    @Column(name = "error_message")
+    private String errorMessage;
+
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @OneToMany(mappedBy = "fileDescription", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<FileChunkEntity> chunks = new HashSet<>();
+
 }

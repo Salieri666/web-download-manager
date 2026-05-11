@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-05-11-02
+      author: ilya
+      changes:
+        - addColumn:
+            tableName: file_descriptions
+            columns:
+              - column:
+                  name: error_message
+                  type: text
+
+        - addColumn:
+            tableName: file_chunks
+            columns:
+              - column:
+                  name: error_message
+                  type: text

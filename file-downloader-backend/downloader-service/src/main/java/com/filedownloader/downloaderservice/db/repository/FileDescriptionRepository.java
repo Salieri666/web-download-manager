@@ -1,11 +1,17 @@
 package com.filedownloader.downloaderservice.db.repository;
 
 import com.filedownloader.downloaderservice.model.entity.FileDescriptionEntity;
+import com.filedownloader.downloaderservice.model.enums.FileDescriptionStatus;
 import com.filedownloader.exceptionlib.exception.EntityNotFoundException;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.*;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,6 +19,19 @@ import java.util.UUID;
 public interface FileDescriptionRepository extends JpaRepository<FileDescriptionEntity, UUID>, JpaSpecificationExecutor<FileDescriptionEntity> {
 
     Optional<FileDescriptionEntity> findByFilename(String filename);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @QueryHints(@QueryHint(name = "jakarta.persistence.lock.timeout", value = "-2"))//skip locked
+    @Query("""
+            select fileDescription
+            from FileDescriptionEntity fileDescription
+            where fileDescription.status in :statuses
+            order by fileDescription.createdDate asc
+            """)
+    List<FileDescriptionEntity> findAllForHeaderProcessing(
+            @Param("statuses") Collection<FileDescriptionStatus> statuses,
+            Pageable pageable
+    );
 
     default FileDescriptionEntity getEntityById(UUID id) {
         return findById(id)
