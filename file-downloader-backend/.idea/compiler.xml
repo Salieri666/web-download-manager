@@ -12,7 +12,11 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok-mapstruct-binding/0.2.0/lombok-mapstruct-binding-0.2.0.jar" />
           <entry name="$MAVEN_REPOSITORY$/org/mapstruct/mapstruct-processor/1.6.3/mapstruct-processor-1.6.3.jar" />
         </processorPath>
+        <module name="api-gateway" />
         <module name="exception-lib" />
+        <module name="core-lib" />
+        <module name="config-service" />
+        <module name="discovery-service" />
         <module name="downloader-service" />
       </profile>
     </annotationProcessing>
@@ -21,6 +25,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="api-gateway" options="-parameters" />
       <module name="config-service" options="-parameters" />
+      <module name="core-lib" options="-parameters" />
       <module name="discovery-service" options="-parameters" />
       <module name="downloader-service" options="-parameters" />
       <module name="exception-lib" options="-parameters" />
