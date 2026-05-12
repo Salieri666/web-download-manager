@@ -10,6 +10,8 @@ import com.filedownloader.exceptionlib.exception.BusinessException;
 import com.filedownloader.exceptionlib.utils.ExceptionUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.tika.mime.MimeTypes;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -30,6 +32,7 @@ import java.util.UUID;
 public class FileAssembleProcessingServiceImpl implements FileAssembleProcessingService {
 
     private static final Path READY_DOWNLOADS_DIR = Paths.get("ready-downloads");
+    private static final Path TEMP_DOWNLOADS_DIR = Paths.get("temporary-downloads");
 
     private final FileDescriptionRepository fileDescriptionRepository;
     private final PlatformTransactionManager transactionManager;
@@ -50,6 +53,7 @@ public class FileAssembleProcessingServiceImpl implements FileAssembleProcessing
             return new AssembleProcessingContext(
                     fileDescription.getId(),
                     fileDescription.getFilename(),
+                    fileDescription.getMimeType(),
                     chunkFiles
             );
         });
@@ -72,7 +76,7 @@ public class FileAssembleProcessingServiceImpl implements FileAssembleProcessing
             throw ex;
         } finally {
             if (assembledSuccessfully) {
-                cleanupTempFiles(context);
+                cleanupTempFiles(context.fileDescriptionId());
             }
         }
     }
@@ -135,21 +139,23 @@ public class FileAssembleProcessingServiceImpl implements FileAssembleProcessing
     private Path buildAssembledFilePath(AssembleProcessingContext context) {
         String fileName = sanitizeFileName(context.fileName());
         String baseName = extractBaseName(fileName);
-        String extension = extractExtension(fileName);
+        String extension = extractExtensionFromMimeType(context.mimeType());
         String assembledFileName = extension.isBlank()
                 ? context.fileDescriptionId() + "-" + baseName
                 : context.fileDescriptionId() + "-" + baseName + "." + extension;
         return READY_DOWNLOADS_DIR.resolve(assembledFileName);
     }
 
-    private void cleanupTempFiles(AssembleProcessingContext context) {
-        for (ChunkFileContext chunkFile : context.chunkFiles()) {
-            Path tempFilePath = Paths.get(chunkFile.storagePath());
-            try {
-                Files.deleteIfExists(tempFilePath);
-            } catch (IOException e) {
-                log.warn("Failed to cleanup temp file {}", tempFilePath, e);
-            }
+    private void cleanupTempFiles(UUID fileDescriptionId) {
+        Path fileDescriptionTempDir = TEMP_DOWNLOADS_DIR
+                .resolve(fileDescriptionId.toString())
+                .toAbsolutePath()
+                .normalize();
+
+        try {
+            FileUtils.deleteDirectory(fileDescriptionTempDir.toFile());
+        } catch (IOException e) {
+            log.warn("Failed to cleanup temp directory {}", fileDescriptionTempDir, e);
         }
     }
 
@@ -182,17 +188,21 @@ public class FileAssembleProcessingServiceImpl implements FileAssembleProcessing
         return fileName.substring(0, lastDotIndex);
     }
 
-    private String extractExtension(String fileName) {
-        int lastDotIndex = fileName.lastIndexOf('.');
-        if (lastDotIndex <= 0 || lastDotIndex == fileName.length() - 1) {
+    private String extractExtensionFromMimeType(String mimeType) {
+        try {
+            var extension = MimeTypes.getDefaultMimeTypes()
+                    .forName(mimeType)
+                    .getExtension();
+            return extension.startsWith(".") ? extension.substring(1) : extension;
+        } catch (Exception e) {
             return "";
         }
-        return fileName.substring(lastDotIndex + 1);
     }
 
     private record AssembleProcessingContext(
             UUID fileDescriptionId,
             String fileName,
+            String mimeType,
             List<ChunkFileContext> chunkFiles
     ) {
     }

@@ -27,7 +27,7 @@ public class FileDescriptionEntity extends Auditable {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "filename", nullable = false, length = 512)
+    @Column(name = "file_name", nullable = false, length = 512)
     private String filename;
 
     @Column(name = "storage_path", nullable = false)

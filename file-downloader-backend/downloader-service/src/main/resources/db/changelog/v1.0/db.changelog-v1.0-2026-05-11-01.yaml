@@ -26,8 +26,6 @@ databaseChangeLog:
               - column:
                   name: storage_path
                   type: text
-                  constraints:
-                    nullable: false
               - column:
                   name: source_url
                   type: text
@@ -42,13 +40,9 @@ databaseChangeLog:
               - column:
                   name: total_size
                   type: bigint
-                  constraints:
-                    nullable: false
               - column:
                   name: mime_type
                   type: varchar(255)
-                  constraints:
-                    nullable: false
               - column:
                   name: checksum
                   type: varchar(256)
@@ -80,7 +74,7 @@ databaseChangeLog:
                   constraints:
                     nullable: false
                     primaryKey: true
-                    primaryKeyName: pk_file_descriptions
+                    primaryKeyName: pk_file_chunks
               - column:
                   name: file_id
                   type: uuid
