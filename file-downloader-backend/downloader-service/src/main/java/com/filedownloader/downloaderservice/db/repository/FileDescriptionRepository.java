@@ -18,7 +18,14 @@ import java.util.UUID;
 @Repository
 public interface FileDescriptionRepository extends JpaRepository<FileDescriptionEntity, UUID>, JpaSpecificationExecutor<FileDescriptionEntity> {
 
-    Optional<FileDescriptionEntity> findByFilename(String filename);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @QueryHints(@QueryHint(name = "jakarta.persistence.lock.timeout", value = "5000"))
+    @Query("""
+            select fileDescription
+            from FileDescriptionEntity fileDescription
+            where fileDescription.id = :id
+            """)
+    Optional<FileDescriptionEntity> findByIdForUpdate(@Param("id") UUID id);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @QueryHints(@QueryHint(name = "jakarta.persistence.lock.timeout", value = "-2"))//skip locked

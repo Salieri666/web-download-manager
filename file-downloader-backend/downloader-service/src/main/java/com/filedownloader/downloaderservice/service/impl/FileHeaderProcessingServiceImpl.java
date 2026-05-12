@@ -1,16 +1,43 @@
 package com.filedownloader.downloaderservice.service.impl;
 
+import com.filedownloader.corelib.utils.RetryUtils;
+import com.filedownloader.corelib.utils.TransactionUtils;
+import com.filedownloader.downloaderservice.db.repository.FileChunkRepository;
+import com.filedownloader.downloaderservice.db.repository.FileDescriptionRepository;
+import com.filedownloader.downloaderservice.model.entity.FileChunkEntity;
+import com.filedownloader.downloaderservice.model.entity.FileDescriptionEntity;
+import com.filedownloader.downloaderservice.model.enums.FileChunkStatus;
+import com.filedownloader.downloaderservice.model.enums.FileDescriptionStatus;
 import com.filedownloader.downloaderservice.service.FileHeaderProcessingService;
+import com.filedownloader.exceptionlib.exception.BusinessException;
+import com.filedownloader.exceptionlib.exception.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 
+import java.io.IOException;
+import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class FileHeaderProcessingServiceImpl implements FileHeaderProcessingService {
+
+    private static final int CHUNK_PARTS = 10;
+    private static final String ACCEPT_RANGES_BYTES = "bytes";
+    private static final String USER_AGENT = "file-downloader-service";
+
+    private final FileDescriptionRepository fileDescriptionRepository;
+    private final FileChunkRepository fileChunkRepository;
+    private final PlatformTransactionManager transactionManager;
 
     private final HttpClient httpClient = HttpClient.newBuilder()
             .followRedirects(HttpClient.Redirect.NORMAL)
@@ -19,14 +46,75 @@ public class FileHeaderProcessingServiceImpl implements FileHeaderProcessingServ
 
     @Override
     public void process(UUID fileDescriptionId) {
-        log.debug("Header processing is not implemented yet for fileDescriptionId={}", fileDescriptionId);
+        FileDescriptionContext context = RetryUtils.executeWithRetry(
+                () -> markHeaderProcessing(fileDescriptionId),
+                attempt -> log.warn("Lock attempt for getting fileDescriptionId={}, attempt {}", fileDescriptionId, attempt)
+        );
+
+        try {
+            RemoteFileMetadata metadata = probeRemoteFile(context.sourceUrl());
+            RetryUtils.executeWithRetry(() -> createChunks(context.fileDescriptionId(), metadata),
+                    attempt -> log.warn("Lock attempt for creating chunks for fileDescriptionId={}, attempt {}", fileDescriptionId, attempt)
+            );
+
+            log.info(
+                    "Header processing completed for fileDescriptionId={}, totalSize={}, rangeSupported={}, chunkCount={}",
+                    fileDescriptionId,
+                    metadata.totalSize(),
+                    metadata.supportsRange(),
+                    metadata.supportsRange() ? computeChunkCount(metadata.totalSize()) : 1
+            );
+        } catch (RuntimeException ex) {
+            markFailed(fileDescriptionId, ex);
+            throw ex;
+        }
     }
 
-    /*private RemoteFileMetadata probeRemoteFile(String sourceUrl) {
+    private FileDescriptionContext markHeaderProcessing(UUID fileDescriptionId) {
+        return TransactionUtils.execute(transactionManager, () -> {
+            FileDescriptionEntity fileDescription = fileDescriptionRepository.findByIdForUpdate(fileDescriptionId)
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            FileDescriptionEntity.class,
+                            String.valueOf(fileDescriptionId)
+                    ));
+            fileDescription.setStatus(FileDescriptionStatus.HEADER_PROCESSING);
+            return new FileDescriptionContext(fileDescription.getId(), fileDescription.getSourceUrl());
+        });
+    }
+
+    private void markFailed(UUID fileDescriptionId, RuntimeException cause) {
+        TransactionUtils.executeWithoutResult(transactionManager, () -> {
+            fileDescriptionRepository.findByIdForUpdate(fileDescriptionId).ifPresent(fileDescription -> {
+                fileDescription.setStatus(FileDescriptionStatus.FAILED);
+                fileDescription.setErrorMessage(cause.getMessage());
+            });
+        });
+    }
+
+    private void createChunks(UUID fileDescriptionId, RemoteFileMetadata metadata) {
+        TransactionUtils.executeWithoutResult(transactionManager, () -> {
+            FileDescriptionEntity fileDescription = fileDescriptionRepository.findByIdForUpdate(fileDescriptionId)
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            FileDescriptionEntity.class,
+                            String.valueOf(fileDescriptionId)
+                    ));
+            fileDescription.setTotalSize(metadata.totalSize());
+            fileDescription.setMimeType(metadata.mimeType());
+            fileDescription.setStatus(FileDescriptionStatus.HEADER_PROCESSED);
+            fileDescription.setErrorMessage(null);
+
+            fileDescription.getChunks().clear();
+            List<FileChunkEntity> chunks = buildChunks(fileDescription, metadata);
+            fileDescription.getChunks().addAll(chunks);
+            fileChunkRepository.saveAll(chunks);
+        });
+    }
+
+    private RemoteFileMetadata probeRemoteFile(String sourceUrl) {
         try {
             HttpRequest request = HttpRequest.newBuilder(URI.create(sourceUrl))
                     .timeout(Duration.ofSeconds(30))
-                    .header("User-Agent", "file-downloader-service")
+                    .header("User-Agent", USER_AGENT)
                     .method("HEAD", HttpRequest.BodyPublishers.noBody())
                     .build();
             HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
@@ -82,6 +170,14 @@ public class FileHeaderProcessingServiceImpl implements FileHeaderProcessingServ
         return chunks;
     }
 
+    private int computeChunkCount(long totalSize) {
+        if (totalSize <= 0) {
+            return 1;
+        }
+        long chunkSize = Math.max(1L, (long) Math.ceil((double) totalSize / CHUNK_PARTS));
+        return (int) Math.ceil((double) totalSize / chunkSize);
+    }
+
     private FileChunkEntity createChunk(FileDescriptionEntity fileDescription, int chunkIndex, long startByte, long endByte) {
         return FileChunkEntity.builder()
                 .fileDescription(fileDescription)
@@ -95,7 +191,9 @@ public class FileHeaderProcessingServiceImpl implements FileHeaderProcessingServ
                 .build();
     }
 
+    private record FileDescriptionContext(UUID fileDescriptionId, String sourceUrl) {
+    }
 
     private record RemoteFileMetadata(long totalSize, String mimeType, boolean supportsRange) {
-    }*/
+    }
 }
