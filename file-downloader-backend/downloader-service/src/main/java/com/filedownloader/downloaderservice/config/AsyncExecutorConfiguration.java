@@ -17,7 +17,7 @@ public class AsyncExecutorConfiguration {
 
     @Bean(name = "chunkDownloadingTaskExecutor")
     public TaskExecutor chunkDownloadingTaskExecutor() {
-        return createExecutor("chunk-", 8, 16, 500);
+        return createExecutor("chunk-", 8, 16, 200);
     }
 
     private ThreadPoolTaskExecutor createExecutor(String prefix, int corePoolSize, int maxPoolSize, int queueCapacity) {

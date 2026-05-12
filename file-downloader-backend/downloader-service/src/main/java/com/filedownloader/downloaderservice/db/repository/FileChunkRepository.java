@@ -34,6 +34,16 @@ public interface FileChunkRepository extends JpaRepository<FileChunkEntity, UUID
             Pageable pageable
     );
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @QueryHints(@QueryHint(name = "jakarta.persistence.lock.timeout", value = "5000"))
+    @Query("""
+            select fileChunk
+            from FileChunkEntity fileChunk
+            join fetch fileChunk.fileDescription fileDescription
+            where fileChunk.id = :id
+            """)
+    java.util.Optional<FileChunkEntity> findByIdForUpdate(@Param("id") UUID id);
+
     default FileChunkEntity getEntityById(UUID id) {
         return findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(FileChunkEntity.class, String.valueOf(id)));

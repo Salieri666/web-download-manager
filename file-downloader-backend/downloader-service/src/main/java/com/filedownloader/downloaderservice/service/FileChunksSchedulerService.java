@@ -39,7 +39,7 @@ public class FileChunksSchedulerService {
     }
 
 
-    @Scheduled(fixedDelayString = "${downloader.scheduler.file-chunks-delay:1000}")
+    @Scheduled(fixedDelayString = "${downloader.scheduler.file-chunks-delay:2000}")
     @Transactional
     public void processChunks() {
         List<FileChunkEntity> fileChunks = lockFileChunksForProcessing();
@@ -79,7 +79,7 @@ public class FileChunksSchedulerService {
                         FileChunkStatus.PENDING
                 ),
                 List.of(
-                        FileDescriptionStatus.HEADER_PROCESSED
+                        FileDescriptionStatus.DOWNLOADING_CHUNKS
                 ),
                 PageRequest.of(0, BATCH_SIZE)
         );

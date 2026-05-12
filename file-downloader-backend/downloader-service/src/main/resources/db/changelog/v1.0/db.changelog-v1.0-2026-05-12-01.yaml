@@ -1,0 +1,27 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-05-12-01
+      author: ilya
+      changes:
+        - addColumn:
+            tableName: file_chunks
+            columns:
+              - column:
+                  name: source_url
+                  type: text
+              - column:
+                  name: storage_path
+                  type: text
+
+        - sql:
+            sql: |
+              update file_chunks fc
+              set source_url = fd.source_url
+              from file_descriptions fd
+              where fc.file_id = fd.id
+                and fc.source_url is null
+
+        - addNotNullConstraint:
+            tableName: file_chunks
+            columnName: source_url
+            columnDataType: text

@@ -1,18 +1,7 @@
 package com.filedownloader.downloaderservice.model.entity;
 
 import com.filedownloader.downloaderservice.model.enums.FileChunkStatus;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
@@ -43,6 +32,9 @@ public class FileChunkEntity {
     @JoinColumn(name = "file_id", nullable = false)
     private FileDescriptionEntity fileDescription;
 
+    @Column(name = "source_url", nullable = false)
+    private String sourceUrl;
+
     @Column(name = "chunk_index", nullable = false)
     private Integer chunkIndex;
 
@@ -63,6 +55,9 @@ public class FileChunkEntity {
 
     @Column(name = "worker_id")
     private String workerId;
+
+    @Column(name = "storage_path")
+    private String storagePath;
 
     @Column(name = "retry_count", nullable = false)
     @Builder.Default

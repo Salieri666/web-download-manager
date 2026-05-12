@@ -25,6 +25,8 @@ public class FileChunkDto {
     private Long currentSize;
     private FileChunkStatus status;
     private String workerId;
+    private String sourceUrl;
+    private String storagePath;
     private Integer retryCount;
     private Instant lastHeartbeat;
     private Instant completedAt;

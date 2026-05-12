@@ -11,6 +11,7 @@ import com.filedownloader.downloaderservice.model.enums.FileDescriptionStatus;
 import com.filedownloader.downloaderservice.service.FileHeaderProcessingService;
 import com.filedownloader.exceptionlib.exception.BusinessException;
 import com.filedownloader.exceptionlib.exception.EntityNotFoundException;
+import com.filedownloader.exceptionlib.utils.ExceptionUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -86,7 +87,7 @@ public class FileHeaderProcessingServiceImpl implements FileHeaderProcessingServ
         TransactionUtils.executeWithoutResult(transactionManager, () -> {
             fileDescriptionRepository.findByIdForUpdate(fileDescriptionId).ifPresent(fileDescription -> {
                 fileDescription.setStatus(FileDescriptionStatus.FAILED);
-                fileDescription.setErrorMessage(cause.getMessage());
+                fileDescription.setErrorMessage(ExceptionUtils.getStackTraceAsString(cause));
             });
         });
     }
@@ -100,7 +101,7 @@ public class FileHeaderProcessingServiceImpl implements FileHeaderProcessingServ
                     ));
             fileDescription.setTotalSize(metadata.totalSize());
             fileDescription.setMimeType(metadata.mimeType());
-            fileDescription.setStatus(FileDescriptionStatus.HEADER_PROCESSED);
+            fileDescription.setStatus(FileDescriptionStatus.DOWNLOADING_CHUNKS);
             fileDescription.setErrorMessage(null);
 
             fileDescription.getChunks().clear();
@@ -181,6 +182,7 @@ public class FileHeaderProcessingServiceImpl implements FileHeaderProcessingServ
     private FileChunkEntity createChunk(FileDescriptionEntity fileDescription, int chunkIndex, long startByte, long endByte) {
         return FileChunkEntity.builder()
                 .fileDescription(fileDescription)
+                .sourceUrl(fileDescription.getSourceUrl())
                 .chunkIndex(chunkIndex)
                 .startByte(startByte)
                 .endByte(endByte)
