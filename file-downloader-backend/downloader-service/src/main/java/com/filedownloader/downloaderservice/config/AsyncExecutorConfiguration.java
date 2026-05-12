@@ -2,6 +2,7 @@ package com.filedownloader.downloaderservice.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
@@ -9,14 +10,14 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @EnableAsync
 public class AsyncExecutorConfiguration {
 
-    @Bean(name = "applicationTaskExecutor")
-    public ThreadPoolTaskExecutor applicationTaskExecutor() {
+    @Bean(name = "fileDescriptionTaskExecutor")
+    public TaskExecutor fileDescriptionTaskExecutor() {
         return createExecutor("app-", 4, 8, 500);
     }
 
     @Bean(name = "chunkDownloadingTaskExecutor")
-    public ThreadPoolTaskExecutor chunkDownloadingTaskExecutor() {
-        return createExecutor("chunk-", 8, 16, 200);
+    public TaskExecutor chunkDownloadingTaskExecutor() {
+        return createExecutor("chunk-", 8, 16, 500);
     }
 
     private ThreadPoolTaskExecutor createExecutor(String prefix, int corePoolSize, int maxPoolSize, int queueCapacity) {

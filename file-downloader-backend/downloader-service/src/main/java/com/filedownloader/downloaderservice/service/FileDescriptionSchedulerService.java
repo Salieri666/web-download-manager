@@ -5,6 +5,7 @@ import com.filedownloader.downloaderservice.model.entity.FileDescriptionEntity;
 import com.filedownloader.downloaderservice.model.enums.FileDescriptionStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -18,7 +19,7 @@ import java.util.List;
 
 @Slf4j
 @Service
-public class FileSchedulerService {
+public class FileDescriptionSchedulerService {
 
     private static final int HEADER_PROCESSING_BATCH_SIZE = 50;
 
@@ -26,13 +27,13 @@ public class FileSchedulerService {
     private final ThreadPoolTaskExecutor taskExecutor;
     private final FileHeaderProcessingService fileHeaderProcessingService;
 
-    public FileSchedulerService(
+    public FileDescriptionSchedulerService(
             FileDescriptionRepository fileDescriptionRepository,
-            @Qualifier("applicationTaskExecutor") ThreadPoolTaskExecutor taskExecutor,
+            @Qualifier("fileDescriptionTaskExecutor") TaskExecutor taskExecutor,
             FileHeaderProcessingService fileHeaderProcessingService
     ) {
         this.fileDescriptionRepository = fileDescriptionRepository;
-        this.taskExecutor = taskExecutor;
+        this.taskExecutor = (ThreadPoolTaskExecutor) taskExecutor;
         this.fileHeaderProcessingService = fileHeaderProcessingService;
     }
 
