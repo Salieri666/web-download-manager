@@ -40,6 +40,31 @@ public interface FileDescriptionRepository extends JpaRepository<FileDescription
             Pageable pageable
     );
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @QueryHints(@QueryHint(name = "jakarta.persistence.lock.timeout", value = "-2"))//skip locked
+    @Query("""
+            select fileDescription
+            from FileDescriptionEntity fileDescription
+            where fileDescription.status in :statuses
+              and exists (
+                  select 1
+                  from FileChunkEntity fileChunk
+                  where fileChunk.fileDescription = fileDescription
+              )
+              and not exists (
+                  select 1
+                  from FileChunkEntity fileChunk
+                  where fileChunk.fileDescription = fileDescription
+                    and fileChunk.status <> :chunkStatus
+              )
+            order by fileDescription.createdDate asc
+            """)
+    List<FileDescriptionEntity> findAllForAssembleProcessing(
+            @Param("statuses") Collection<FileDescriptionStatus> statuses,
+            @Param("chunkStatus") com.filedownloader.downloaderservice.model.enums.FileChunkStatus chunkStatus,
+            Pageable pageable
+    );
+
     default FileDescriptionEntity getEntityById(UUID id) {
         return findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(FileDescriptionEntity.class, String.valueOf(id)));

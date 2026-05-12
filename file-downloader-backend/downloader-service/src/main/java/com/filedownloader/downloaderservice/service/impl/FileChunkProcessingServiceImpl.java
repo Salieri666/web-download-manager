@@ -6,7 +6,6 @@ import com.filedownloader.downloaderservice.model.entity.FileChunkEntity;
 import com.filedownloader.downloaderservice.model.enums.FileChunkStatus;
 import com.filedownloader.downloaderservice.service.FileChunkProcessingService;
 import com.filedownloader.exceptionlib.exception.BusinessException;
-import com.filedownloader.exceptionlib.exception.EntityNotFoundException;
 import com.filedownloader.exceptionlib.utils.ExceptionUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -157,11 +156,7 @@ public class FileChunkProcessingServiceImpl implements FileChunkProcessingServic
 
     private void updateHeartbeat(UUID fileChunkId, long currentSize, Instant heartbeat) {
         TransactionUtils.executeWithoutResult(transactionManager, () -> {
-            FileChunkEntity fileChunk = fileChunkRepository.findById(fileChunkId)
-                    .orElseThrow(() -> new EntityNotFoundException(
-                            FileChunkEntity.class,
-                            String.valueOf(fileChunkId)
-                    ));
+            FileChunkEntity fileChunk = fileChunkRepository.getEntityById(fileChunkId);
             fileChunk.setWorkerId(workerId);
             fileChunk.setCurrentSize(currentSize);
             fileChunk.setLastHeartbeat(heartbeat);

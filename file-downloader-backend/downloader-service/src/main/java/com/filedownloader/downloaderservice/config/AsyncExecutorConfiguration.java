@@ -20,6 +20,11 @@ public class AsyncExecutorConfiguration {
         return createExecutor("chunk-", 8, 16, 200);
     }
 
+    @Bean(name = "assembleTaskExecutor")
+    public TaskExecutor assembleTaskExecutor() {
+        return createExecutor("assemble-", 8, 16, 200);
+    }
+
     private ThreadPoolTaskExecutor createExecutor(String prefix, int corePoolSize, int maxPoolSize, int queueCapacity) {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(corePoolSize);
