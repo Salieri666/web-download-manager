@@ -1,5 +1,6 @@
 package com.filedownloader.downloaderservice.service;
 
+import com.filedownloader.corelib.model.dto.FileDTO;
 import com.filedownloader.downloaderservice.model.dto.CreateFileDto;
 import com.filedownloader.downloaderservice.model.dto.FileDescriptionDto;
 import com.filedownloader.downloaderservice.model.dto.FileDescriptionWithChunksDto;
@@ -16,6 +17,8 @@ public interface FileDescriptionService {
     Page<FileDescriptionDto> getAll(FileDescriptionFilter filter, Pageable pageable);
 
     FileDescriptionDto create(CreateFileDto dto);
+
+    FileDTO download(UUID id);
 
     void delete(UUID id);
 }

@@ -1,4 +1,4 @@
-package com.filedownloader.corelib.entity;
+package com.filedownloader.corelib.model.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

@@ -1,6 +1,6 @@
 package com.filedownloader.downloaderservice.model.entity;
 
-import com.filedownloader.corelib.entity.Auditable;
+import com.filedownloader.corelib.model.entity.Auditable;
 import com.filedownloader.downloaderservice.model.enums.FileDescriptionStatus;
 import jakarta.persistence.*;
 import lombok.*;
