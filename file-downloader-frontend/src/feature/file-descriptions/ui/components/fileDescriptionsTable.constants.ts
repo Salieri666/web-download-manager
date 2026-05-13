@@ -1,0 +1,22 @@
+export const FILE_DESCRIPTION_STATUS_COLORS: Record<string, string> = {
+  PENDING: '#d97706',
+  HEADER_PROCESSING_PENDING: '#0284c7',
+  HEADER_PROCESSING: '#2563eb',
+  DOWNLOADING_CHUNKS: '#1d4ed8',
+  ASSEMBLE_CHUNKS: '#7c3aed',
+  DOWNLOAD_COMPLETED: '#15803d',
+  FAILED: '#dc2626',
+}
+
+export const FILE_DESCRIPTION_STATUS_LABELS: Record<string, string> = {
+  PENDING: 'Pending',
+  HEADER_PROCESSING_PENDING: 'Header pending',
+  HEADER_PROCESSING: 'Processing header',
+  DOWNLOADING_CHUNKS: 'Downloading',
+  ASSEMBLE_CHUNKS: 'Assembling',
+  DOWNLOAD_COMPLETED: 'Completed',
+  FAILED: 'Failed',
+}
+
+export const FILE_DESCRIPTION_TABLE_MIN_WIDTH = 1120
+export const FILE_DESCRIPTION_TABLE_COLUMNS_COUNT = 6
