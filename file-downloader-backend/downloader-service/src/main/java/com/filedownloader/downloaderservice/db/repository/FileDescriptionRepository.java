@@ -65,6 +65,27 @@ public interface FileDescriptionRepository extends JpaRepository<FileDescription
             Pageable pageable
     );
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @QueryHints(@QueryHint(name = "jakarta.persistence.lock.timeout", value = "-2"))//skip locked
+    @Query("""
+            select fileDescription
+            from FileDescriptionEntity fileDescription
+            where fileDescription.status in :statuses
+              and exists (
+                  select 1
+                  from FileChunkEntity fileChunk
+                  where fileChunk.fileDescription = fileDescription
+                    and fileChunk.status = 'FAILED'
+                    and fileChunk.retryCount >= :maxRetryCount
+              )
+            order by fileDescription.createdDate asc
+            """)
+    List<FileDescriptionEntity> findAllWithFailedChunks(
+            @Param("statuses") Collection<FileDescriptionStatus> statuses,
+            @Param("maxRetryCount") Integer maxRetryCount,
+            Pageable pageable
+    );
+
     default FileDescriptionEntity getEntityById(UUID id) {
         return findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(FileDescriptionEntity.class, String.valueOf(id)));
