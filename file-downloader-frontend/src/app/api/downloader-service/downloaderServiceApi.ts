@@ -87,6 +87,18 @@ export const downloaderServiceApi = createApi({
   }),
 })
 
+export async function downloadFile(id: string): Promise<Blob> {
+  const token = localStorage.getItem('access_token')
+  const response = await fetch(`${apiBaseUrl}/file-description/${id}/download`, {
+    method: 'GET',
+    headers: {
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
+    },
+  })
+  if (!response.ok) throw new Error('Download failed')
+  return response.blob()
+}
+
 export const {
   useGetAllFileDescriptionsQuery,
   useGetFileDescriptionByIdQuery,

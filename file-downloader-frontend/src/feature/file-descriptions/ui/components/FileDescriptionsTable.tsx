@@ -16,6 +16,7 @@ export function FileDescriptionsTable({
   rowsPerPage,
   onPageChange,
   onRowsPerPageChange,
+  onRowClick,
 }: {
   items: FileDescriptionDto[]
   isLoading: boolean
@@ -25,6 +26,7 @@ export function FileDescriptionsTable({
   rowsPerPage: number
   onPageChange: (nextPage: number) => void
   onRowsPerPageChange: (nextRowsPerPage: number) => void
+  onRowClick?: (item: FileDescriptionDto) => void
 }) {
   return (
     <Box
@@ -52,7 +54,9 @@ export function FileDescriptionsTable({
               message="No records found."
             />
           ) : (
-            items.map((item) => <FileDescriptionTableRow key={item.id} item={item} />)
+            items.map((item) => (
+              <FileDescriptionTableRow key={item.id} item={item} onClick={onRowClick} />
+            ))
           )}
         </TableBody>
       </Table>

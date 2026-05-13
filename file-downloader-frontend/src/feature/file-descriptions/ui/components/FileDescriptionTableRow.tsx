@@ -4,12 +4,20 @@ import { formatBytes, formatDateTime } from '../../../../shared/lib/formatters'
 import type { FileDescriptionDto } from '../../../../app/api/downloader-service/types'
 import { FileDescriptionStatusChip } from './FileDescriptionStatusChip'
 
-export function FileDescriptionTableRow({ item }: { item: FileDescriptionDto }) {
+export function FileDescriptionTableRow({
+  item,
+  onClick,
+}: {
+  item: FileDescriptionDto
+  onClick?: (item: FileDescriptionDto) => void
+}) {
   return (
     <TableRow
       hover
+      onClick={() => onClick?.(item)}
       sx={{
         backgroundColor: '#fbfdff',
+        cursor: onClick ? 'pointer' : undefined,
         '&:hover': {
           backgroundColor: '#ebeced !important',
         },
