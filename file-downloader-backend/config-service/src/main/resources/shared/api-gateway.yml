@@ -19,16 +19,10 @@ spring:
     gateway:
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials Vary, RETAIN_UNIQUE
-      globalcors:
-        add-to-simple-url-handler-mapping: true
-        corsConfigurations:
-          "[/**]":
-            allowedOrigins: ${ALLOWED_ORIGINS}
-            allowedHeaders: "*"
-            allowedMethods: "*"
       server:
         #webflux version
         webflux:
+          trusted-proxies: ".*"
           discovery:
             locator:
               enabled: true
@@ -52,6 +46,9 @@ springdoc:
         url: /downloader-service/v3/api-docs
         primaryName: API Downloader Service
 
+security:
+  cors:
+    allowed-origins: ${ALLOWED_ORIGINS}
 
 logging:
   level:
@@ -80,15 +77,9 @@ spring:
     gateway:
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials Vary, RETAIN_UNIQUE
-      globalcors:
-        add-to-simple-url-handler-mapping: true
-        corsConfigurations:
-          "[/**]":
-            allowedOrigins: ${ALLOWED_ORIGINS}
-            allowedHeaders: "*"
-            allowedMethods: "*"
       server:
         webflux:
+          trusted-proxies: ".*"
           discovery:
             locator:
               enabled: true
@@ -108,6 +99,10 @@ spring:
           delay: 5000
       loadbalancer:
         mode: SERVICE
+
+security:
+  cors:
+    allowed-origins: ${ALLOWED_ORIGINS}
 
 springdoc:
   enable-native-support: true

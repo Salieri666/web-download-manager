@@ -3,6 +3,7 @@ package com.filedownloader.downloaderservice.db.repository;
 import com.filedownloader.downloaderservice.model.entity.FileChunkEntity;
 import com.filedownloader.downloaderservice.model.enums.FileChunkStatus;
 import com.filedownloader.downloaderservice.model.enums.FileDescriptionStatus;
+import com.filedownloader.downloaderservice.model.projection.FileChunkDownloadProgressProjection;
 import com.filedownloader.exceptionlib.exception.EntityNotFoundException;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
@@ -32,6 +33,17 @@ public interface FileChunkRepository extends JpaRepository<FileChunkEntity, UUID
             @Param("chunkStatuses") Collection<FileChunkStatus> chunkStatuses,
             @Param("fileDescriptionStatuses") Collection<FileDescriptionStatus> fileDescriptionStatuses,
             Pageable pageable
+    );
+
+    @Query("""
+            select fileChunk.fileDescription.id as fileDescriptionId,
+                   coalesce(sum(fileChunk.currentSize), 0) as downloadedSize
+            from FileChunkEntity fileChunk
+            where fileChunk.fileDescription.id in :fileDescriptionIds
+            group by fileChunk.fileDescription.id
+            """)
+    List<FileChunkDownloadProgressProjection> findDownloadedSizeByFileDescriptionIds(
+            @Param("fileDescriptionIds") Collection<UUID> fileDescriptionIds
     );
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)

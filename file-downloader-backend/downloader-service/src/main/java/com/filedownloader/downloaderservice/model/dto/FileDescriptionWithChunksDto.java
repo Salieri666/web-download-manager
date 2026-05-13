@@ -32,6 +32,9 @@ public class FileDescriptionWithChunksDto {
     private Instant createdDate;
     private Instant updatedDate;
 
+    @Schema(description = "Percentage of downloading")
+    private Integer percentage;
+
     @Schema(description = "File chunks")
     private List<FileChunkDto> chunks;
 }

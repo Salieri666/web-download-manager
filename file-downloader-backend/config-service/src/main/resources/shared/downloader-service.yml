@@ -40,6 +40,14 @@ spring:
 
 server:
   port: ${DOWNLOADER_SERVICE_PORT:8085}
+  forward-headers-strategy: framework
+
+springdoc:
+  cache:
+    disabled: true
+
+openapi:
+  base-url: ${GATEWAY_PUBLIC_URL}
 
 logging:
   level:
@@ -86,6 +94,14 @@ spring:
 
 server:
   port: ${DOWNLOADER_SERVICE_PORT:8085}
+  forward-headers-strategy: framework
+
+springdoc:
+  cache:
+    disabled: true
+
+openapi:
+  base-url: ${GATEWAY_PUBLIC_URL}
 
 security:
   cors:

@@ -54,6 +54,9 @@ public class FileDescriptionDto {
     @Schema(description = "Error message")
     private String errorMessage;
 
+    @Schema(description = "Percentage of downloading")
+    private Integer percentage;
+
     private Instant createdDate;
     private Instant updatedDate;
 }
