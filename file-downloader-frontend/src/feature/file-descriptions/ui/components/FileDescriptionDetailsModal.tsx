@@ -70,7 +70,7 @@ export function FileDescriptionDetailsModal({
 }) {
   const { data, isLoading, isError } = useGetFileDescriptionByIdQuery(
     { id: fileId ?? '' },
-    { skip: !fileId || !open },
+    { skip: !fileId || !open, refetchOnMountOrArgChange: true },
   )
 
   const [isDownloading, setIsDownloading] = useState(false)
