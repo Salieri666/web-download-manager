@@ -11,7 +11,12 @@ export function FileDescriptionsTableMessageRow({
 }) {
   return (
     <TableRow>
-      <TableCell colSpan={FILE_DESCRIPTION_TABLE_COLUMNS_COUNT} sx={{ py: 4 }}>
+      <TableCell colSpan={FILE_DESCRIPTION_TABLE_COLUMNS_COUNT}
+                 sx={{
+                   py: 4,
+                   backgroundColor: '#fbfdff',
+      }}
+      >
         <Typography variant="body2" color={color}>
           {message}
         </Typography>
