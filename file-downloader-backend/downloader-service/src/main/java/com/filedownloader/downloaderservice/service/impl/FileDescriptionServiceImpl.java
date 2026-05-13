@@ -7,7 +7,9 @@ import com.filedownloader.downloaderservice.db.specification.FileDescriptionSpec
 import com.filedownloader.downloaderservice.model.dto.CreateFileDto;
 import com.filedownloader.downloaderservice.model.dto.FileDescriptionDto;
 import com.filedownloader.downloaderservice.model.dto.FileDescriptionWithChunksDto;
+import com.filedownloader.downloaderservice.model.entity.FileChunkEntity;
 import com.filedownloader.downloaderservice.model.entity.FileDescriptionEntity;
+import com.filedownloader.downloaderservice.model.enums.FileChunkStatus;
 import com.filedownloader.downloaderservice.model.enums.FileDescriptionStatus;
 import com.filedownloader.downloaderservice.model.filter.FileDescriptionFilter;
 import com.filedownloader.downloaderservice.model.mapper.FileDescriptionMapper;
@@ -15,7 +17,10 @@ import com.filedownloader.downloaderservice.model.projection.FileChunkDownloadPr
 import com.filedownloader.downloaderservice.service.FileDescriptionService;
 import com.filedownloader.downloaderservice.validator.FileDescriptionReadyValidator;
 import com.filedownloader.exceptionlib.exception.BusinessException;
+import com.filedownloader.exceptionlib.exception.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -26,11 +31,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FileDescriptionServiceImpl implements FileDescriptionService {
@@ -117,7 +124,12 @@ public class FileDescriptionServiceImpl implements FileDescriptionService {
     @Override
     @Transactional
     public void delete(UUID id) {
-        repository.delete(repository.getEntityById(id));
+        FileDescriptionEntity fileDescription = repository.findByIdForUpdate(id)
+                .orElseThrow(() -> new EntityNotFoundException(FileDescriptionEntity.class, String.valueOf(id)));
+
+        markAsFailed(fileDescription);
+        cleanupArtifacts(fileDescription);
+        repository.delete(fileDescription);
     }
 
     private Integer calculatePercentage(Long totalSize, Long downloadedSize) {
@@ -125,8 +137,54 @@ public class FileDescriptionServiceImpl implements FileDescriptionService {
             return 0;
         }
 
-        int percentage = (int) Math.round(downloadedSize * 100.0d / totalSize);
-        return Math.min(100, Math.max(0, percentage));
+        return  (int) Math.round(downloadedSize * 100.0d / totalSize);
+    }
+
+    private void markAsFailed(FileDescriptionEntity fileDescription) {
+        fileDescription.setStatus(FileDescriptionStatus.FAILED);
+        fileDescription.setErrorMessage("Deleted by user: fileDescriptionId=" + fileDescription.getId());
+        fileDescription.getChunks().forEach(chunk -> markChunkAsFailed(chunk, "Deleted by user: fileDescriptionId=" + fileDescription.getId()));
+    }
+
+    private void markChunkAsFailed(FileChunkEntity fileChunk, String deletionMessage) {
+        fileChunk.setStatus(FileChunkStatus.FAILED);
+        fileChunk.setErrorMessage(deletionMessage);
+        fileChunk.setLastHeartbeat(Instant.now());
+    }
+
+    private void cleanupArtifacts(FileDescriptionEntity fileDescription) {
+        deleteReadyFileIfExists(fileDescription.getStoragePath());
+        deleteTemporaryDirectoryIfExists(fileDescription.getId());
+    }
+
+    private void deleteReadyFileIfExists(String storagePath) {
+        if (storagePath == null || storagePath.isBlank()) {
+            return;
+        }
+
+        Path filePath = Paths.get(storagePath).toAbsolutePath().normalize();
+        try {
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            throw new BusinessException("Failed to delete stored file: path=" + filePath, e);
+        }
+    }
+
+    private void deleteTemporaryDirectoryIfExists(UUID fileDescriptionId) {
+        Path fileDescriptionTempDir = Paths.get("temporary-downloads")
+                .resolve(fileDescriptionId.toString())
+                .toAbsolutePath()
+                .normalize();
+
+        if (!Files.exists(fileDescriptionTempDir)) {
+            return;
+        }
+
+        try {
+            FileUtils.deleteDirectory(fileDescriptionTempDir.toFile());
+        } catch (IOException e) {
+            throw new BusinessException("Failed to delete temporary files: path=" + fileDescriptionTempDir, e);
+        }
     }
 
 }
