@@ -22,6 +22,7 @@ export function FileDescriptionsTableHead() {
         <TableCell>Size</TableCell>
         <TableCell>Mime type</TableCell>
         <TableCell>Dates</TableCell>
+        <TableCell sx={{ width: 48 }}></TableCell>
       </TableRow>
     </TableHead>
   )

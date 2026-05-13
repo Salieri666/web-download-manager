@@ -84,6 +84,13 @@ export const downloaderServiceApi = createApi({
       }),
       invalidatesTags: [{ type: 'FileDescription', id: 'LIST' }],
     }),
+    deleteFileDescription: build.mutation<void, { id: string }>({
+      query: ({ id }) => ({
+        url: `/file-description/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: [{ type: 'FileDescription', id: 'LIST' }],
+    }),
   }),
 })
 
@@ -103,4 +110,5 @@ export const {
   useGetAllFileDescriptionsQuery,
   useGetFileDescriptionByIdQuery,
   useCreateFileDescriptionMutation,
+  useDeleteFileDescriptionMutation,
 } = downloaderServiceApi

@@ -1,10 +1,11 @@
 import { useCallback, useState } from 'react'
 
-import { Add } from '@mui/icons-material'
-import { Box, Button } from '@mui/material'
+import { Add, Refresh } from '@mui/icons-material'
+import { Box, Button, IconButton, Tooltip } from '@mui/material'
 
 import {
   useCreateFileDescriptionMutation,
+  useDeleteFileDescriptionMutation,
   useGetAllFileDescriptionsQuery,
 } from '../../../app/api/downloader-service'
 import type { FileDescriptionDto } from '../../../app/api/downloader-service/types'
@@ -21,9 +22,11 @@ export function FileDescriptionsPage() {
   const query = useGetAllFileDescriptionsQuery({
     page,
     size: rowsPerPage,
+    sort: ['createdDate,desc'],
   })
 
   const [createFile] = useCreateFileDescriptionMutation()
+  const [deleteFile] = useDeleteFileDescriptionMutation()
 
   const handleCreate = useCallback(
     async (data: { filename: string; sourceUrl: string }) => {
@@ -32,13 +35,32 @@ export function FileDescriptionsPage() {
     [createFile],
   )
 
+  const handleDelete = useCallback(
+    async (item: FileDescriptionDto) => {
+      await deleteFile({ id: item.id }).unwrap()
+    },
+    [deleteFile],
+  )
+
   const items: FileDescriptionDto[] = query.data?.content ?? []
   const totalElements = query.data?.page?.totalElements ?? items.length
   const isLoading = query.isLoading || query.isFetching
 
   return (
     <>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mb: 2 }}>
+        <Tooltip title="Reload">
+          <IconButton
+            onClick={() => query.refetch()}
+            sx={{
+              backgroundColor: 'rgba(255,255,255,0.11)',
+              color: '#fbfdff',
+              '&:hover': { backgroundColor: 'rgba(255,255,255,0.27)' },
+            }}
+          >
+            <Refresh />
+          </IconButton>
+        </Tooltip>
         <Button
           variant="contained"
           startIcon={<Add />}
@@ -71,6 +93,7 @@ export function FileDescriptionsPage() {
           setPage(0)
         }}
         onRowClick={(item) => setSelectedFileId(item.id)}
+        onDelete={handleDelete}
       />
       <FileDescriptionDetailsModal
         open={selectedFileId !== null}

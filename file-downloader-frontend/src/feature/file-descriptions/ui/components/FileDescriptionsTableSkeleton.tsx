@@ -27,6 +27,9 @@ export function FileDescriptionsTableSkeleton({ rows = 3 }: { rows?: number }) {
       <TableCell>
         <Skeleton width={140} />
       </TableCell>
+      <TableCell>
+        <Skeleton width={48} />
+      </TableCell>
     </TableRow>
   ))
 }

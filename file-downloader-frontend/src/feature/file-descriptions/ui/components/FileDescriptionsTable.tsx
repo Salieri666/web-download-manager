@@ -17,6 +17,7 @@ export function FileDescriptionsTable({
   onPageChange,
   onRowsPerPageChange,
   onRowClick,
+  onDelete,
 }: {
   items: FileDescriptionDto[]
   isLoading: boolean
@@ -27,6 +28,7 @@ export function FileDescriptionsTable({
   onPageChange: (nextPage: number) => void
   onRowsPerPageChange: (nextRowsPerPage: number) => void
   onRowClick?: (item: FileDescriptionDto) => void
+  onDelete?: (item: FileDescriptionDto) => void
 }) {
   return (
     <Box
@@ -55,7 +57,7 @@ export function FileDescriptionsTable({
             />
           ) : (
             items.map((item) => (
-              <FileDescriptionTableRow key={item.id} item={item} onClick={onRowClick} />
+              <FileDescriptionTableRow key={item.id} item={item} onClick={onRowClick} onDelete={onDelete} />
             ))
           )}
         </TableBody>

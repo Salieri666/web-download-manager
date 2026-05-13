@@ -1,4 +1,5 @@
-import { Box, TableCell, TableRow, Typography } from '@mui/material'
+import { Box, IconButton, TableCell, TableRow, Tooltip, Typography } from '@mui/material'
+import DeleteIcon from '@mui/icons-material/DeleteOutlined'
 
 import { formatBytes, formatDateTime } from '../../../../shared/lib/formatters'
 import type { FileDescriptionDto } from '../../../../app/api/downloader-service/types'
@@ -7,10 +8,17 @@ import { FileDescriptionStatusChip } from './FileDescriptionStatusChip'
 export function FileDescriptionTableRow({
   item,
   onClick,
+  onDelete,
 }: {
   item: FileDescriptionDto
   onClick?: (item: FileDescriptionDto) => void
+  onDelete?: (item: FileDescriptionDto) => void
 }) {
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onDelete?.(item)
+  }
+
   return (
     <TableRow
       hover
@@ -102,6 +110,13 @@ export function FileDescriptionTableRow({
         <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
           {formatDateTime(item.createdDate)}
         </Typography>
+      </TableCell>
+      <TableCell sx={{ width: 48 }}>
+        <Tooltip title="Delete">
+          <IconButton size="small" onClick={handleDelete} sx={{ color: '#dc2626' }}>
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
       </TableCell>
     </TableRow>
   )
