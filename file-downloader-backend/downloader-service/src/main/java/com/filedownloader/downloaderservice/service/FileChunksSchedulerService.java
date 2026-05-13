@@ -76,11 +76,13 @@ public class FileChunksSchedulerService {
     private List<FileChunkEntity> lockFileChunksForProcessing() {
         return fileChunkRepository.findAllForChunkProcessing(
                 List.of(
-                        FileChunkStatus.PENDING
+                        FileChunkStatus.PENDING,
+                        FileChunkStatus.FAILED
                 ),
                 List.of(
                         FileDescriptionStatus.DOWNLOADING_CHUNKS
                 ),
+                5,
                 PageRequest.of(0, BATCH_SIZE)
         );
     }

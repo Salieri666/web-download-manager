@@ -102,14 +102,13 @@ public class FileDescriptionServiceImpl implements FileDescriptionService {
         Path filePath = Paths.get(fileDescription.getStoragePath()).toAbsolutePath().normalize();
 
         try {
-            byte[] body = Files.readAllBytes(filePath);
             long contentLength = Files.size(filePath);
 
             return FileDTO.builder()
                     .fileName(filePath.getFileName().toString())
                     .contentType(org.springframework.http.MediaType.parseMediaType(fileDescription.getMimeType()))
                     .contentLength(contentLength)
-                    .body(body)
+                    .inputStream(Files.newInputStream(filePath))
                     .lastModified(fileDescription.getModifiedDate())
                     .build();
         } catch (IOException e) {
@@ -120,7 +119,6 @@ public class FileDescriptionServiceImpl implements FileDescriptionService {
         }
     }
 
-    //TODO change logic
     @Override
     @Transactional
     public void delete(UUID id) {

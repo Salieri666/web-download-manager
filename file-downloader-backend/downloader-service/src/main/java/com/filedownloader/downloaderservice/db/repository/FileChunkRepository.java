@@ -26,12 +26,14 @@ public interface FileChunkRepository extends JpaRepository<FileChunkEntity, UUID
             from FileChunkEntity fileChunk
             join fileChunk.fileDescription fileDescription
             where fileChunk.status in :chunkStatuses
+              and (fileChunk.status <> 'FAILED' or fileChunk.retryCount < :maxRetryCount)
               and fileDescription.status in :fileDescriptionStatuses
             order by fileDescription.createdDate asc, fileChunk.chunkIndex asc
             """)
     List<FileChunkEntity> findAllForChunkProcessing(
             @Param("chunkStatuses") Collection<FileChunkStatus> chunkStatuses,
             @Param("fileDescriptionStatuses") Collection<FileDescriptionStatus> fileDescriptionStatuses,
+            @Param("maxRetryCount") Integer maxRetryCount,
             Pageable pageable
     );
 

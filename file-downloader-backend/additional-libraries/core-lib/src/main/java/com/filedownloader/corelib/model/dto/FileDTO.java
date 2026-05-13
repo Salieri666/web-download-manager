@@ -5,13 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
@@ -24,23 +25,21 @@ import java.util.List;
 public class FileDTO {
 
     private String fileName;
-
     private MediaType contentType;
-
     private Long contentLength;
 
-    private byte[] body;
+    private InputStream inputStream;
 
     private Instant lastModified;
 
     public ResponseEntity<Resource> getResource() {
-        ByteArrayResource resource = new ByteArrayResource(body);
+        InputStreamResource resource = new InputStreamResource(inputStream);
 
         String etag = "\"" + contentLength + "-" + lastModified + "\"";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(contentType);
-        headers.setContentLength(body.length);
+        headers.setContentLength(contentLength); // Используем поле contentLength, а не длину массива
         headers.setContentDisposition(ContentDisposition.attachment()
                 .filename(fileName, StandardCharsets.UTF_8)
                 .build());
