@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 
-import { Add, Refresh } from '@mui/icons-material'
-import { Box, Button, IconButton, Tooltip } from '@mui/material'
+import { Add } from '@mui/icons-material'
+import { Box, Button } from '@mui/material'
 
 import {
   useCreateFileDescriptionMutation,
@@ -9,6 +9,7 @@ import {
   useGetAllFileDescriptionsQuery,
 } from '../../../app/api/downloader-service'
 import type { FileDescriptionDto } from '../../../app/api/downloader-service/types'
+import { RefreshControl } from '../../../shared/ui/RefreshControl'
 import { CreateFileDescriptionModal } from './components/CreateFileDescriptionModal'
 import { FileDescriptionDetailsModal } from './components/FileDescriptionDetailsModal'
 import { FileDescriptionsTable } from './components/FileDescriptionsTable'
@@ -18,12 +19,16 @@ export function FileDescriptionsPage() {
   const [rowsPerPage, setRowsPerPage] = useState(20)
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [pollingInterval, setPollingInterval] = useState(0)
 
-  const query = useGetAllFileDescriptionsQuery({
-    page,
-    size: rowsPerPage,
-    sort: ['createdDate,desc'],
-  })
+  const query = useGetAllFileDescriptionsQuery(
+    {
+      page,
+      size: rowsPerPage,
+      sort: ['createdDate,desc'],
+    },
+    { pollingInterval },
+  )
 
   const [createFile] = useCreateFileDescriptionMutation()
   const [deleteFile] = useDeleteFileDescriptionMutation()
@@ -44,23 +49,16 @@ export function FileDescriptionsPage() {
 
   const items: FileDescriptionDto[] = query.data?.content ?? []
   const totalElements = query.data?.page?.totalElements ?? items.length
-  const isLoading = query.isLoading || query.isFetching
+  const isLoading = query.isLoading
 
   return (
     <>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mb: 2 }}>
-        <Tooltip title="Reload">
-          <IconButton
-            onClick={() => query.refetch()}
-            sx={{
-              backgroundColor: 'rgba(255,255,255,0.11)',
-              color: '#fbfdff',
-              '&:hover': { backgroundColor: 'rgba(255,255,255,0.27)' },
-            }}
-          >
-            <Refresh />
-          </IconButton>
-        </Tooltip>
+        <RefreshControl
+          pollingInterval={pollingInterval}
+          onPollingIntervalChange={setPollingInterval}
+          onRefresh={() => query.refetch()}
+        />
         <Button
           variant="contained"
           startIcon={<Add />}
