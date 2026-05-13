@@ -5,6 +5,7 @@ import {
   Button,
   Chip,
   CircularProgress,
+  Collapse,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -73,6 +74,7 @@ export function FileDescriptionDetailsModal({
   )
 
   const [isDownloading, setIsDownloading] = useState(false)
+  const [errorExpanded, setErrorExpanded] = useState(false)
 
   const handleDownload = useCallback(async () => {
     if (!fileId) return
@@ -172,12 +174,76 @@ export function FileDescriptionDetailsModal({
               )}
 
               {data.errorMessage && (
-                <Typography
-                  variant="body2"
-                  sx={{ color: '#dc2626', mt: 1.5, fontWeight: 600 }}
-                >
-                  Error: {data.errorMessage}
-                </Typography>
+                <Box sx={{ mt: 1.5 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'baseline',
+                      gap: 0.5,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      component="span"
+                      sx={{ color: '#dc2626', fontWeight: 600, flexShrink: 0 }}
+                    >
+                      Error:
+                    </Typography>
+                    <Button
+                      size="small"
+                      onClick={() => setErrorExpanded((prev) => !prev)}
+                      sx={{
+                        minWidth: 0,
+                        p: 0,
+                        fontSize: 12,
+                        fontWeight: 600,
+                        textTransform: 'none',
+                        color: '#dc2626',
+                        lineHeight: 'inherit',
+                        textDecoration: 'underline',
+                        textUnderlineOffset: 2,
+                        '&:hover': { color: '#b91c1c', backgroundColor: 'transparent' },
+                      }}
+                    >
+                      {errorExpanded ? 'Show less' : 'Show more'}
+                    </Button>
+                  </Box>
+                  <Collapse in={errorExpanded}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: '#dc2626',
+                        fontWeight: 500,
+                        mt: 0.5,
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                        overflowWrap: 'break-word',
+                      }}
+                    >
+                      {data.errorMessage}
+                    </Typography>
+                  </Collapse>
+                  {!errorExpanded && (
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: '#dc2626',
+                        fontWeight: 500,
+                        mt: 0.5,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                        overflowWrap: 'break-word',
+                      }}
+                    >
+                      {data.errorMessage}
+                    </Typography>
+                  )}
+                </Box>
               )}
             </Box>
 
@@ -249,7 +315,7 @@ function InfoField({ label, value }: { label: string; value: React.ReactNode }) 
       <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', fontWeight: 600 }}>
         {label}
       </Typography>
-      <Typography variant="body2" sx={{ color: '#0f172a', fontWeight: 600 }}>
+      <Typography variant="body2" component="div" sx={{ color: '#0f172a', fontWeight: 600 }}>
         {value}
       </Typography>
     </Box>
