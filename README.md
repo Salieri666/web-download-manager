@@ -22,9 +22,11 @@ Microservice architecture built with **Spring Boot 4.0** (Java 21) + **Spring Cl
 |---------|------|---------|
 | **config-service** | 8888 | Centralized configuration (Spring Cloud Config) |
 | **discovery-service** | 8761 | Service registry (Eureka) |
-| **api-gateway** | 8081 | Single entry point, routing, CORS |
-| **downloader-service** | — | Core logic: download management, chunks, file assembly |
+| **api-gateway** | 8081 | Single entry point, routing, CORS, OAuth2 resource server |
+| **downloader-service** | 8085 | Core logic: download management, chunks, file assembly |
+| **Keycloak** | 8082 | Authentication and SSO (OAuth2 / OpenID Connect) |
 | **PostgreSQL** | 5437 | Database (Docker) |
+| **Keycloak PostgreSQL** | - | Keycloak database (Docker) |
 
 ## How It Works
 
@@ -49,12 +51,18 @@ Main screen showing all downloads with status badges, progress bars, and control
 
 Modal dialog with detailed file information, chunk list, and download button.
 
+### Login
+
+![Login](screenshots/login_screen.png)
+
+Custom Keycloak login page.
+
 ## Getting Started
 
 ### 1. Backend
 
 ```bash
-# Start PostgreSQL
+# Start PostgreSQL, Keycloak, and other infrastructure
 cd file-downloader-backend
 docker compose up -d
 
@@ -67,6 +75,7 @@ docker compose up -d
 
 API Gateway will be available at `http://localhost:8081`.
 Swagger UI: `http://localhost:8081/swagger-ui/index.html`
+Keycloak Admin Console: `http://localhost:8082` (admin / admin)
 
 ### 2. Frontend
 
@@ -76,7 +85,8 @@ npm install
 npm run dev
 ```
 
-Frontend will be available at `http://localhost:5173`.
+Frontend will be available at `http://localhost:5173`.  
+The app automatically redirects to the Keycloak login page for authentication.
 
 ## API Endpoints
 
@@ -92,8 +102,10 @@ All requests go through the API Gateway (`http://localhost:8081`).
 
 ## Tech Stack
 
-**Frontend:** React, TypeScript, Vite, Material UI, Redux Toolkit, RTK Query, React Router, Zod, react-hook-form
+**Frontend:** React, TypeScript, Vite, Material UI, Redux Toolkit, RTK Query, React Router, Zod, react-hook-form, keycloak-js
 
 **Backend:** Java 21, Spring Boot 4.0, Spring Cloud 2025.1.0, Spring Data JPA, Spring Cloud Gateway, Eureka, MapStruct, Liquibase, PostgreSQL
+
+**Auth:** Keycloak 26 (OAuth2 / OpenID Connect, PKCE flow, custom login theme)
 
 **Infrastructure:** Docker, Docker Compose
