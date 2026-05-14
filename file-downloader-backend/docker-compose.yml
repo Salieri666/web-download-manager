@@ -18,7 +18,67 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - file_downloader_network
+
+  keycloak-file-downloader-db:
+    image: postgres:17-alpine
+    restart: always
+    container_name: keycloak-file-downloader-db
+    environment:
+      POSTGRES_USER: "${KEYCLOAK_POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${KEYCLOAK_POSTGRES_PASSWORD}"
+      POSTGRES_DB: "${KEYCLOAK_POSTGRES_DB}"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${KEYCLOAK_POSTGRES_USER} -d ${KEYCLOAK_POSTGRES_DB}" ]
+      interval: 5s
+      timeout: 2s
+      retries: 25
+    volumes:
+      - keycloak-file-downloader-db-data:/var/lib/postgresql
+    ports:
+      - "65432:5432"
+    networks:
+      - file_downloader_network
+
+  keycloak-file-downloader:
+    image: quay.io/keycloak/keycloak:26.0.0
+    container_name: keycloak-file-downloader
+    environment:
+      KC_DB: "postgres"
+      KC_DB_URL: "jdbc:postgresql://keycloak-file-downloader-db:5432/${KEYCLOAK_POSTGRES_DB}"
+      KC_DB_USERNAME: "${KEYCLOAK_POSTGRES_USER}"
+      KC_DB_PASSWORD: "${KEYCLOAK_POSTGRES_PASSWORD}"
+
+      KEYCLOAK_ADMIN: "${KEYCLOAK_ADMIN}"
+      KEYCLOAK_ADMIN_PASSWORD: "${KEYCLOAK_ADMIN_PASSWORD}"
+      KC_HTTP_ENABLED: "true"
+
+      KC_HOSTNAME: "${KEYCLOAK_HOSTNAME}"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HOSTNAME_STRICT: "false"
+
+      KC_PROXY: "edge"
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+
+    ports:
+      - "${KEYCLOAK_HTTP_PORT}:8080"
+      - "${KEYCLOAK_DEBUG_PORT}:9000"
+    volumes:
+      - ./init-keycloak-config/file-downloader-realm.json:/opt/keycloak/data/import/realm.json
+    depends_on:
+      keycloak-file-downloader-db:
+        condition: service_healthy
+    command: [ "start", "--http-enabled=true", "--import-realm" ]
+    networks:
+      - file_downloader_network
 
 volumes:
   postgres_data:
-    driver: local
+  keycloak-file-downloader-db-data:
+
+networks:
+  file_downloader_network:
+    name: file_downloader_network
+    driver: bridge
