@@ -35,7 +35,7 @@ services:
       timeout: 2s
       retries: 25
     volumes:
-      - keycloak-file-downloader-db-data:/var/lib/postgresql
+      - keycloak-file-downloader-db-data:/var/lib/postgresql/data
     ports:
       - "65432:5432"
     networks:
