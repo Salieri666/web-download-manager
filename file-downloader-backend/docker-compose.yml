@@ -67,10 +67,18 @@ services:
       - "${KEYCLOAK_DEBUG_PORT}:9000"
     volumes:
       - ./init-keycloak-config/file-downloader-realm.json:/opt/keycloak/data/import/realm.json
+      - ./keycloak/themes:/opt/keycloak/themes
     depends_on:
       keycloak-file-downloader-db:
         condition: service_healthy
-    command: [ "start", "--http-enabled=true", "--import-realm" ]
+    command: [
+      "start",
+      "--http-enabled=true",
+      "--import-realm",
+      "--spi-theme-static-max-age=-1",
+      "--spi-theme-cache-themes=false",
+      "--spi-theme-cache-templates=false"
+    ]
     networks:
       - file_downloader_network
 
