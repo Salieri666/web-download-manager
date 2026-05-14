@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 import { apiBaseUrl } from '../../../core/config/apiConfig'
+import keycloak from '../../../core/auth/keycloak'
 import type {
   CreateFileDto,
   FileDescriptionDto,
@@ -14,9 +15,8 @@ import type {
 const baseQuery = fetchBaseQuery({
   baseUrl: apiBaseUrl,
   prepareHeaders: (headers) => {
-    const token = localStorage.getItem('access_token')
-    if (token) {
-      headers.set('authorization', `Bearer ${token}`)
+    if (keycloak.token) {
+      headers.set('authorization', `Bearer ${keycloak.token}`)
     }
 
     headers.set('content-type', 'application/json')
@@ -95,7 +95,8 @@ export const downloaderServiceApi = createApi({
 })
 
 export async function downloadFile(id: string): Promise<Blob> {
-  const token = localStorage.getItem('access_token')
+  await keycloak.updateToken(10)
+  const token = keycloak.token
   const response = await fetch(`${apiBaseUrl}/file-description/${id}/download`, {
     method: 'GET',
     headers: {
