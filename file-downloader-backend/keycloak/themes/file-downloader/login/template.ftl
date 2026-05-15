@@ -1,4 +1,4 @@
-<#macro registrationLayout displayInfo=false displayWide=false>
+<#macro registrationLayout displayInfo=false displayWide=false displayMessage=false>
 <!DOCTYPE html>
 <html>
 <head>
@@ -34,7 +34,7 @@
           <span class="form-title"><#nested "header"></span>
         </div>
 
-        <#if message?? && message.summary??>
+        <#if displayMessage && message?? && message.summary??>
           <div class="alert alert-${message.type}">
             ${message.summary}
           </div>
