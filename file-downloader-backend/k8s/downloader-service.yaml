@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: downloader-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: downloader-service
+  template:
+    metadata:
+      labels:
+        app: downloader-service
+    spec:
+      serviceAccountName: filedownloader-sa
+      initContainers:
+        - name: wait-for-config
+          image: busybox
+          command: ['sh', '-c', 'until nc -z config-service 8888; do echo waiting for config-service; sleep 3; done']
+        - name: wait-for-db
+          image: busybox
+          command: ['sh', '-c', 'until nc -z postgres-service 5432; do echo waiting for postgres; sleep 3; done']
+      containers:
+        - name: downloader-service
+          image: downloader-service:local
+          imagePullPolicy: Never
+          envFrom:
+            - configMapRef:
+                name: filedownloader-config
+            - secretRef:
+                name: filedownloader-secrets
+          ports:
+            - containerPort: 8081
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8081
+            initialDelaySeconds: 40
+            periodSeconds: 10
+            failureThreshold: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: downloader-service
+spec:
+  selector:
+    app: downloader-service
+  ports:
+    - port: 8081
+      targetPort: 8081
