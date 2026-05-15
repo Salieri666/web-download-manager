@@ -32,7 +32,7 @@ Microservice architecture built with **Spring Boot 4.0** (Java 21) + **Spring Cl
 
 1. User submits a file URL through the web interface
 2. Backend sends a **HEAD request** to the source, determines file size and MIME type
-3. The file is split into **10 chunks** (if the server supports Range requests)
+3. The file is split into chunks (if the server supports Range requests)
 4. Chunks are downloaded **in parallel** to `temporary-downloads/`
 5. Once all chunks are complete, they are **assembled** into a single file in `ready-downloads/`
 6. The completed file is available for download via the web interface
@@ -62,16 +62,10 @@ Custom Keycloak login page.
 ### 1. Backend
 
 ```bash
-# Start PostgreSQL, Keycloak, and other infrastructure
-cd file-downloader-backend
-docker compose up -d
-
-# Start microservices (in order)
-./mvnw spring-boot:run -pl config-service
-./mvnw spring-boot:run -pl discovery-service
-./mvnw spring-boot:run -pl api-gateway
-./mvnw spring-boot:run -pl downloader-service
+# Start docker compose
+docker compose --env-file .env.local-deployment -f docker-compose.local-deployment.yml up -d
 ```
+
 
 API Gateway will be available at `http://localhost:8081`.
 Swagger UI: `http://localhost:8081/swagger-ui/index.html`
