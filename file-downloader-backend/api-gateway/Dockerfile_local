@@ -1,0 +1,18 @@
+FROM maven:3.9.15-amazoncorretto-21 as build
+WORKDIR /build
+
+COPY pom.xml pom.xml
+COPY additional-libraries/pom.xml additional-libraries/pom.xml
+COPY additional-libraries/exception-lib additional-libraries/exception-lib
+COPY api-gateway/pom.xml api-gateway/pom.xml
+COPY api-gateway/src api-gateway/src
+
+RUN mvn -f pom.xml install -N -DskipTests=true && \
+    mvn -f additional-libraries/pom.xml install -N -DskipTests=true && \
+    mvn -f additional-libraries/exception-lib/pom.xml clean install -DskipTests=true
+RUN mvn -f api-gateway/pom.xml clean package -DskipTests=true -P eureka
+
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+COPY --from=build /build/api-gateway/target/*-filedownloader.jar /app/app.jar
+CMD ["java", "-Dspring.profiles.active=dev,native", "-jar", "app.jar"]

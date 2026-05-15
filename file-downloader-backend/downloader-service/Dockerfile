@@ -1,0 +1,20 @@
+FROM maven:3.9.15-amazoncorretto-21 as build
+WORKDIR /build
+
+COPY pom.xml pom.xml
+COPY additional-libraries/pom.xml additional-libraries/pom.xml
+COPY additional-libraries/exception-lib additional-libraries/exception-lib
+COPY additional-libraries/core-lib additional-libraries/core-lib
+COPY downloader-service/pom.xml downloader-service/pom.xml
+COPY downloader-service/src downloader-service/src
+
+RUN mvn -f pom.xml install -N -DskipTests=true && \
+    mvn -f additional-libraries/pom.xml install -N -DskipTests=true && \
+    mvn -f additional-libraries/exception-lib/pom.xml clean install -DskipTests=true && \
+    mvn -f additional-libraries/core-lib/pom.xml clean install -DskipTests=true
+RUN mvn -f downloader-service/pom.xml clean package -DskipTests=true -P kubernetes
+
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+COPY --from=build /build/downloader-service/target/*-filedownloader.jar /app/app.jar
+CMD ["java", "-Dspring.profiles.active=sit,native", "-jar", "app.jar"]
